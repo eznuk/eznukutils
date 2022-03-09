@@ -12,7 +12,7 @@ pip install -e git://github.com/eznuk/eznukutils.git#egg=eznukutils
 Utilities related to arrays.
 
 ### cv
-Helpers related to the constant volumen technique.
+Utilities related to the constant volumen technique.
 
 ### mathutils
 Utilities related to math.
