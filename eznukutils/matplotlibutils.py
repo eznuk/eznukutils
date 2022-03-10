@@ -1,3 +1,7 @@
+"""
+Utilities for matplotlib.
+"""
+
 import numpy as np
 
 def align_yaxis(ax1, v1, ax2, v2):

@@ -1,4 +1,6 @@
 import numpy as np
+import numpy.typing as npt
+from typing import Tuple
 
 def convert_to_array(x):
     if not type(x) == np.ndarray:
@@ -9,36 +11,32 @@ def convert_to_array(x):
     else:
         return x
 
-def find_nearest(array, value):
-    """finds nearest entry in an array.
+def find_nearest(arr: npt.NDArray[np.number],
+                 value: float) -> Tuple[int, float]:
+    """Find nearest entry in an array.
     
-    Parameters
-    ----------
-    array : array_like
-        data
-    value : float
-        value to find nearest entry in data for
+    Args:
+        arr: A 1D array containing the data.
+        value: Value to find nearest entry in arr for.
     
-    Returns
-    -------
-    ind, val : float
-        index and value of nearest entry
+    Returns:
+        ind, val: Index and value of nearest entry.
     """
     
-    array = np.asarray(array)
-    idx = (np.abs(array - value)).argmin()
-    return np.where(array==array[idx])[0][0], array[idx]
+    arr = np.asarray(arr)
+    idx = (np.abs(arr - value)).argmin()
+    return np.where(arr==arr[idx])[0][0], arr[idx]
 
-def filter_peaks(dat_arr, peak_thr):
-    """Filters out single peaks.
+def filter_peaks(dat_arr: npt.NDArray[np.number], peak_thr: float):
+    """Filter out single peaks.
     Changes dat_arr in place!
     
-    Parameters
-    ----------
-    dat_arr : array_like
-        array of data
-    peak_thr : float
-        threshold for peak detection.
+    Args:
+        dat_arr: Array of data.
+        peak_thr: Threshold for peak detection.
+
+    Returns:
+        Modified dat_arr.
     """
     
     for ii, dat in enumerate(dat_arr):

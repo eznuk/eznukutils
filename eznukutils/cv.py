@@ -1,33 +1,27 @@
 """
-helper functions related to the constant volume method
+Utility functions related to the constant volume method.
+All units in SI unless otherwise stated.
 """
 
 import numpy as np
 
 from . import physics as ph
+from .types import NumericArrayLike as NAL, StringIterable
 
-def pcovtostd(b__mbar, tau, pcov, V, T__degrC, gas):
-    """ Calculate the standard deviation of the mass flow resulting from
+def pcovtostd(b__mbar: float, tau: float, pcov: np.ndarray, 
+              V: float, T__degrC: float, gas: str) -> float:
+    """Calculate the standard deviation of the mass flow resulting from
     an exponential pressure drop fit.
     
-    Parameters
-    ----------
-    b__mbar : float
-        fitting parameter 'b__mbar'
-    tau : float
-        fitting parameter 'tau'
-    pcov : ndarray
-        array containing the covariance
-    V : float
-        volume of vessel in m^3
-    T__degrC : float
-        temperature of vessel in degr C
-    gas : string
-        name of gas; choices are "He", "CO2" and "N2"
+    Args:
+        b__mbar: fitting parameter 'b__mbar'
+        tau: fitting parameter 'tau'
+        pcov: array containing the covariance
+        V: volume of vessel in m^3
+        T__degrC: temperature of vessel in degr C
+        gas: name of gas; choices are "He", "CO2" and "N2"
     
-    Returns
-    -------
-    mdot_balance_std__sccm : float
+    Returns:
         standard deviation of the mass flow balance in sccm
     """
     
@@ -37,11 +31,19 @@ def pcovtostd(b__mbar, tau, pcov, V, T__degrC, gas):
                                                  * (273.15+np.mean(T__degrC)))
     return ph.kgstosccm(mdot_balance_std, gas)
 
-def calc_pressure_rise_time(p_now__mbar, p_goal__mbar, mdot__sccm, gas, T):
-    """
-    prints the time needed to reach a desired DD 
-    pressure with with given mass flow through an MFC
-    T in K
+def calc_pressure_rise_time(p_now__mbar: float, p_goal__mbar: float,
+                            mdot__sccm: float, gas: str, T: float,
+                            V: float):
+    """Prints the time needed to reach a desired vessel 
+    pressure with with given mass flow through an MFC.
+
+    Args:
+        p_now__mbar: Current pressure im mbar.
+        p_goal__mbar: Goal pressure in mbar.
+        mdot__sccm: MFC mass flow in sccm.
+        gas: Gas species.
+        T: Temperature in K.
+        V: Volume of the vessel.
     """
     import datetime
     pdot = ph.mdot_to_pdot(ph.sccmtokgs(mdot__sccm, gas), gas, T)

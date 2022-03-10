@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 
 def running_mean(x, N):
     """calculates the running mean of a signal x with window length N"""
@@ -12,19 +13,15 @@ def running_mean(x, N):
     cumsum = np.cumsum(augmented)
     return (cumsum[N:] - cumsum[:-N]) / N
 
-def r_squared(dat, fit):
+def r_squared(dat: npt.NDArray[np.number],
+              fit: npt.NDArray[np.number]) -> float:
     """Calculating R^2 of a fit.
     
-    Parameters
-    ----------
-    dat : ndarray
-        original data
-    fit : ndarray
-        fitted data
+    Args:
+        dat: original data
+        fit: fitted data
     
-    Returns
-    -------
-    r_sq : float
+    Returns:
         R^2 value
     """
     residuals = dat - fit

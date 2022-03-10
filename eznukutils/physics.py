@@ -1,31 +1,30 @@
 """
-physical constants and other quantities
-some conversions
+Physical constants and other quantities.
+Some conversions.
+All units in SI unless otherwise stated.
 """
 
 import numpy as np
+from typing import Union
+
+from .types import NumericArrayLike as NAL, StringIterable
 
 # ----------------------------------------
 # physical constants, source: HCnP, p. 1-1
 R = 8.3144598           # universal gas constant [kg m^2 / (s^2 mol K)] 
 kB = 1.38065e-23        # boltzmann constant [J/K]
 
-def get_mu(gas, T):
+def get_mu(gas: str, T: NAL) -> NAL:
     """Returns the dynamic viscosity of given gas at given temperature
     by linear interpolation.
     Source: HCnP, pp. 6-242f
     
-    Parameters
-    ----------
-    gas : str
-        choices are "He", "CO2" and "N2".
-    T : float, array_like
-        temperature in K between 20 and 100 °C.
+    Args:
+        gas: choices are "He", "CO2" and "N2".
+        T: temperature in K between 20 and 100 °C.
     
-    Returns
-    -------
-    visc : float, array_like
-       dynamic viscosity of gas at temp T in Pa*s
+    Returns:
+        visc: dynamic viscosity of gas at temp T in Pa*s
     """
     temps = [200, 300, 400]  # [K]
     if np.any(T < min(temps)) or np.any(T > max(temps)):
@@ -46,19 +45,16 @@ def get_mu(gas, T):
     visc = np.interp(T, temps, viscs)
     return visc
 
-def get_M(gas):
+def get_M(gas: Union[str, StringIterable]) -> NAL:
     """Returns the molar mass of given gas.
     Source: HCnP, pp. 4-4ff
     
-    Parameters
-    ----------
-    gas : str or array of str
+    Args:
+        gas: str or array of str
         choices are "He", "CO2" and "N2"
     
-    Returns
-    -------
-    M : float
-       Molar mass of given gas(es).
+    Returns:
+        Molar mass of given gas(es).
     """
     if isinstance(gas, str):
         # single string
@@ -78,68 +74,52 @@ def get_M(gas):
 
     return M
 
-# -------------------------------
-# ---- these can be combined ----
-#--------------------------------
+def get_mscc(gas: str) -> float:
+    """mass of one standard cubic centimeter of a certain gas."""
 
-def kgstosccm(kgs, gas):
+    if gas == "He":
+        return 0.179e-6    # [kg]
+    elif gas == "CO2":
+        return 1.809e-6         # [kg]
+    elif gas == "N2":
+        return 1.251e-6    # [kg]
+    else:
+        raise ValueError("no valid gas given")
+
+def kgstosccm(kgs: NAL, gas: str) -> NAL:
     """Converts kg/s to sccm for either He, CO2 or N2.
     
-    Parameters
-    ----------
-    kgs : float, ndarray
-        mass flow in kg/s
-    gas : str
-        choices are "He", "CO2" or "N2"
+    Args:
+        kgs: mass flow in kg/s
+        gas: choices are "He", "CO2" or "N2"
         
-    Returns
-    -------
-    sccm : float, ndarray
+    Returns:
         mass flow in sccm
     """
     
     # mass of one standard cubic centimeter:
-    if gas == "He":
-        mscc = 0.179e-6    # [kg]
-    elif gas == "CO2":
-        mscc = 1.809e-6         # [kg]
-    elif gas == "N2":
-        mscc = 1.251e-6    # [kg]
-    else:
-        raise ValueError("no valid gas given")
+    mscc = get_mscc(gas)
     
     sccm = kgs * 60 / mscc
     return sccm
 
-def sccmtokgs(sccm, gas):
+def sccmtokgs(sccm: NAL, gas: str) -> NAL:
     """Converts sccm to kg/s for either He, CO2 or N2
     
-    Parameters
-    ----------
-    sccm : float, ndarray
-        mass flow in sccm
-    gas : str
-        choices are "He", "CO2" or "N2"
+    Args:
+        sccm: mass flow in sccm
+        gas: choices are "He", "CO2" or "N2"
         
-    Returns
-    -------
-    kgs : float, ndarray
-        mass flow in kg/s
+    Returns:
+        kgs: mass flow in kg/s
     """
     
     # mass of one standard cubic centimeter:
-    if gas == "He":
-        mscc = 0.179e-6    # [kg]
-    elif gas == "CO2":
-        mscc = 1.809e-6         # [kg]
-    elif gas == "N2":
-        mscc = 1.251e-6    # [kg]
-    else:
-        raise ValueError("no valid gas given")
+    mscc = get_mscc(gas)
         
     kgs = sccm / 60 * mscc
     return kgs
 
-def mdot_to_pdot(mdot, gas, T, V):
+def mdot_to_pdot(mdot: NAL, gas: str, T: NAL, V: NAL) -> NAL:
     pdot = mdot / (V / (R / get_M(gas) * T))
     return pdot

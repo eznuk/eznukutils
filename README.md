@@ -3,7 +3,7 @@
 ## Installation
 using pip:
 ```
-pip install -e git://github.com/eznuk/eznukutils.git#egg=eznukutils
+pip install git+https://github.com/eznuk/eznukutils.git
 ```
 
 ## Content
@@ -31,4 +31,3 @@ Utilities related to rarefied gas dynamics.
 
 ### statistics
 Utilities related to statistics.
-
