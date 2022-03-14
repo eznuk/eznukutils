@@ -17,7 +17,7 @@ from .types import (NumericArrayLike as NAL,
 R = 8.3144598           # universal gas constant [kg m^2 / (s^2 mol K)] 
 kB = 1.38065e-23        # boltzmann constant [J/K]
 
-def get_mu(gas: str, T: NAL) -> NA:
+def get_mu(gas: str, T: NAL) -> NAL:
     """Returns the dynamic viscosity of given gas at given temperature
     by linear interpolation.
     Source: HCnP, pp. 6-242f
@@ -44,7 +44,6 @@ def get_mu(gas: str, T: NAL) -> NA:
     else:
         raise ValueError("no valid gas given")
 
-    
     visc = np.interp(T, temps, viscs)
     return visc
 
