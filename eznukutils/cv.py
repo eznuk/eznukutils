@@ -46,6 +46,6 @@ def calc_pressure_rise_time(p_now__mbar: float, p_goal__mbar: float,
         V: Volume of the vessel.
     """
     import datetime
-    pdot = ph.mdot_to_pdot(ph.sccmtokgs(mdot__sccm, gas), gas, T)
+    pdot = ph.mdot_to_pdot(ph.sccmtokgs(mdot__sccm, gas), gas, T, V)
     t_ = round((p_goal__mbar-p_now__mbar) * 100 / pdot)
     print(f"Time needed to reach pressure: {str(datetime.timedelta(seconds=t_))} hh:mm:ss")
