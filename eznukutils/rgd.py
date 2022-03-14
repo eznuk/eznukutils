@@ -4,14 +4,19 @@ All units in SI unless otherwise stated.
 """
 
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Callable, Union, Tuple, overload
 
 from . import physics as ph
-from .types import NumericArrayLike as NAL, StringIterable
+from .types import (TypeVarNumericArrayLike as TNAL,
+                    NumericArrayLike as NAL,
+                    StringIterable,
+                    NumericArray as NA)
 
 
-def get_pin_pout(Kn_m: NAL, D_C: float, T: NAL, gas: str,
-                 d_gas: float = 0, ratio: float = 1000) -> Tuple[NAL, NAL]:
+
+def get_pin_pout(
+        Kn_m: TNAL, D_C: float, T: TNAL, gas: str,
+        d_gas: float = 0, ratio: float = 1000) -> Tuple[TNAL, TNAL]:
     """
     Calculate the inlet and outlet pressure using the Kn number.
 
@@ -39,7 +44,7 @@ def get_pin_pout(Kn_m: NAL, D_C: float, T: NAL, gas: str,
     pin = pout * ratio
     return pin, pout
 
-def mfp_to_p_visc(mfp: NAL, T: NAL, gas: str):
+def mfp_to_p_visc(mfp: TNAL, T: TNAL, gas: str) -> TNAL:
     """Calculate the pressure using the mean free path. Use the formula
     used when calculating the mean free path from viscosity.
     
@@ -51,11 +56,15 @@ def mfp_to_p_visc(mfp: NAL, T: NAL, gas: str):
     Returns:
         The pressure in Pa
     """
-    mfp_at_p_1 = mfp_visc(T, 1, gas)
+    if isinstance(T, float):
+        p_1 = 1
+    else:
+        p_1 = np.ones_like(T)
+    mfp_at_p_1 = mfp_visc(T, p_1, gas)
     return mfp_at_p_1 / mfp
 
-def mfp_visc(T: NAL, p: NAL, gas: StringIterable, 
-             M: NAL = None, mu: NAL = None):
+def mfp_visc(T: TNAL, p: TNAL, gas: str, 
+             M: TNAL = None, mu: TNAL = None) -> TNAL:
     """
     Mean free path using kinematic viscosity. 
     Source: Sharipov, F. (1999). Rarefied gas flow through 
@@ -76,13 +85,20 @@ def mfp_visc(T: NAL, p: NAL, gas: StringIterable,
     Returns:
         Mean free path in m.
     """
-    
+    M_: NAL  # new variable to avoid reassigning to a TypeVar
+    mu_: NAL
     if gas:
-        M = ph.get_M(gas)
-        mu = ph.get_mu(gas, T)
-    return mu/p * np.sqrt(np.pi * ph.R * T / (2*M))
+        M_ = ph.get_M(gas)
+        mu_ = ph.get_mu(gas, T)
+    else:
+        if M and mu:
+            M_ = M
+            mu_ = mu
+        else:
+            raise ValueError("Either gas or M and mu must be specified.")
+    return mu_/p * np.sqrt(np.pi * ph.R * T / (2*M_))
 
-def mfp(T: NAL, d: float, p: NAL):
+def mfp(T: TNAL, d: float, p: TNAL) -> TNAL:
     """Calculate mean free path using molecular diameter.
     source: Brodkey, Hershey: Transport Phenomena, Volume 2, p. 716
     
@@ -97,8 +113,8 @@ def mfp(T: NAL, d: float, p: NAL):
     return ph.kB*T/(np.sqrt(2)*np.pi*d**2*p)
 
 
-def get_Kn(pin: NAL, pout: NAL, T: NAL, D_C: float, 
-           gas: StringIterable, d_gas: float = None) -> NAL:
+def get_Kn(pin: TNAL, pout: TNAL, T: TNAL, D_C: float, 
+           gas: str, d_gas: float = None) -> TNAL:
     """Calculate the Knudsen number given the inlet and outlet pressures.
     If a gas diameter is given, this diameter will be used to calculate
     the mean free path. Otherwise, the mean free path calculated
@@ -122,8 +138,17 @@ def get_Kn(pin: NAL, pout: NAL, T: NAL, D_C: float,
     Kn_m = mfp_m / D_C
     return Kn_m
 
+@overload
+def mdot_to_g(mdot: TNAL, L: float, P: float, A: float,
+              dp: TNAL, T: TNAL, gas: str) -> TNAL:
+    ...
+
+@overload
 def mdot_to_g(mdot: NAL, L: float, P: float, A: float,
-              dp: NAL, T: NAL, gas: StringIterable) -> NAL:
+              dp: NAL, T: NAL, gas: StringIterable) -> NA:
+    ...
+
+def mdot_to_g(mdot, L, P, A, dp, T, gas):
     """Calculate the dimensionless mass flow.    
 
     Args:
@@ -142,7 +167,7 @@ def mdot_to_g(mdot: NAL, L: float, P: float, A: float,
     G = mdot * 3*P*L / (8*A**2*dp) * np.sqrt(np.pi*ph.R*T/(2*M))
     return G
 
-def mvel(T: NAL, M: NAL) -> NAL:
+def mvel(T: TNAL, M: TNAL) -> TNAL:
     """Most probable molecular velocity according to the
     Maxwellian distribution.
     
@@ -155,8 +180,8 @@ def mvel(T: NAL, M: NAL) -> NAL:
     """
     return np.sqrt(2*ph.R*T/M) 
 
-def mdot_to_g_veltzke(mdot: NAL, L: float, P: float, A: float, 
-                     dp: NAL, T: NAL, gas: str) -> NAL:
+def mdot_to_g_veltzke(mdot: TNAL, L: float, P: float, A: float, 
+                     dp: TNAL, T: TNAL, gas: str) -> TNAL:
     """Calculate dimensionless mass flow for rectangular channels
     according to 
 
@@ -179,8 +204,8 @@ def mdot_to_g_veltzke(mdot: NAL, L: float, P: float, A: float,
     G = mdot * 3*P*L / (4*A**2*dp) * np.sqrt(ph.R*T/(2*M))
     return G
 
-def mdot_to_g_graur(mdot: NAL, T: NAL, l: float, h: float, w: float,
-                      pin: NAL, pout: NAL, M: float) -> NAL:
+def mdot_to_g_graur(mdot: TNAL, T: TNAL, l: float, h: float, w: float,
+                      pin: TNAL, pout: TNAL, M: float) -> TNAL:
     """Calculate dimensionless mass flow according to eq. (10) in
     
     Graur, I. A., Perrier, P., Ghozlani, W. & Méolans, J. G.
@@ -199,8 +224,9 @@ def mdot_to_g_graur(mdot: NAL, T: NAL, l: float, h: float, w: float,
     """
     return l * np.sqrt(2*ph.R*T) / (h**2 * w * (pin-pout)) * mdot / M
 
-def mdot_to_q_bar_karniadakis(mdot: NAL, T: NAL, l: float, h: float,
-                              w: float, pin: NAL, pout: NAL, gas: str):
+def mdot_to_q_bar_karniadakis(mdot: TNAL, T: TNAL, l: float, h: float,
+                              w: float, pin: TNAL, pout: TNAL,
+                              gas: str) -> TNAL:
     """Calculate the dimensionless flow according to
     Karniadakis & Beskok: Microflows and Nanoflows: Fundamentals 
     and Simulation,
@@ -223,7 +249,7 @@ def mdot_to_q_bar_karniadakis(mdot: NAL, T: NAL, l: float, h: float,
     Q_bar = Q_dot * p_m / ((pin-pout)/l * h**2 * (R_s*T)**0.5)
     return Q_bar
 
-def g_to_mdot(mdot_to_g_fun, G, *args):
+def g_to_mdot(mdot_to_g_fun: Callable, G: TNAL, *args) -> TNAL:
     """General inverse function to get the mass flow from a given 
     dimensionless mass flow G.
     
@@ -240,7 +266,9 @@ def g_to_mdot(mdot_to_g_fun, G, *args):
     mdot = G / G_for_mdot_1
     return mdot
 
-def get_transition_diamater(gas: str, ret_var: bool = False):
+def get_transition_diamater(
+        gas: str, ret_var: bool = False) -> Union[Tuple[float, float], 
+                                                  float]:
     """Get the transition diameter of a gas.
     The transition diameter is a diameter related to rarefied gases.
     Kunze, S., Groll, R., Besser, B. et al.

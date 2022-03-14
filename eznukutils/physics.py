@@ -5,16 +5,19 @@ All units in SI unless otherwise stated.
 """
 
 import numpy as np
-from typing import Union
+from typing import Union, overload
 
-from .types import NumericArrayLike as NAL, StringIterable
+from .types import (NumericArrayLike as NAL,
+                    TypeVarNumericArrayLike as TNAL,
+                    NumericArray as NA,
+                    StringIterable)
 
 # ----------------------------------------
 # physical constants, source: HCnP, p. 1-1
 R = 8.3144598           # universal gas constant [kg m^2 / (s^2 mol K)] 
 kB = 1.38065e-23        # boltzmann constant [J/K]
 
-def get_mu(gas: str, T: NAL) -> NAL:
+def get_mu(gas: str, T: NAL) -> NA:
     """Returns the dynamic viscosity of given gas at given temperature
     by linear interpolation.
     Source: HCnP, pp. 6-242f
@@ -45,7 +48,15 @@ def get_mu(gas: str, T: NAL) -> NAL:
     visc = np.interp(T, temps, viscs)
     return visc
 
-def get_M(gas: Union[str, StringIterable]) -> NAL:
+@overload
+def get_M(gas: str) -> float:
+    ...
+
+@overload
+def get_M(gas: StringIterable) -> NA:
+    ...
+
+def get_M(gas):
     """Returns the molar mass of given gas.
     Source: HCnP, pp. 4-4ff
     
@@ -86,7 +97,7 @@ def get_mscc(gas: str) -> float:
     else:
         raise ValueError("no valid gas given")
 
-def kgstosccm(kgs: NAL, gas: str) -> NAL:
+def kgstosccm(kgs: TNAL, gas: str) -> TNAL:
     """Converts kg/s to sccm for either He, CO2 or N2.
     
     Args:
@@ -103,7 +114,7 @@ def kgstosccm(kgs: NAL, gas: str) -> NAL:
     sccm = kgs * 60 / mscc
     return sccm
 
-def sccmtokgs(sccm: NAL, gas: str) -> NAL:
+def sccmtokgs(sccm: TNAL, gas: str) -> TNAL:
     """Converts sccm to kg/s for either He, CO2 or N2
     
     Args:
@@ -120,6 +131,6 @@ def sccmtokgs(sccm: NAL, gas: str) -> NAL:
     kgs = sccm / 60 * mscc
     return kgs
 
-def mdot_to_pdot(mdot: NAL, gas: str, T: NAL, V: NAL) -> NAL:
+def mdot_to_pdot(mdot: TNAL, gas: str, T: TNAL, V: TNAL) -> TNAL:
     pdot = mdot / (V / (R / get_M(gas) * T))
     return pdot
