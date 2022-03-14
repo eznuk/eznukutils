@@ -8,7 +8,7 @@ from typing import Union, List, TypeVar
 
 NumericArray = npt.NDArray[np.float_]
 
-NumericArrayLike = Union[float, NumericArray]
+NumericArrayLike = Union[float, np.float_, NumericArray]
 
 TypeVarNumericArrayLike = TypeVar("TypeVarNumericArrayLike",
                                   NumericArray, float)
