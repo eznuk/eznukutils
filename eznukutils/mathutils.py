@@ -17,14 +17,13 @@ def round_to_significant_figures(x: float, n: int = 3):
     except ValueError:
         return x
 
-def round_pandas_to_significant_figures(
-        x: Union[pd.Series, pd.DataFrame.col, pd.DataFrame.row],
-        n: int = 3) -> Union[pd.Series, pd.DataFrame]:
+def round_series_to_significant_figures(
+        x: pd.Series, n: int = 3) -> pd.Series:
     """Return a dataframe or series rounded to
     n significant digits.
     
     Args:
-        x: Should be a pd.Series or a pd.Dataframe.col or .row.
+        x: Numbers to round.
         n: Number of significiant figures.
     
     Returns:
