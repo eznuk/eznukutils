@@ -20,6 +20,9 @@ def sensor_out(request):
     return request.param
 
 @pytest.fixture(params=[
-    1.2, np.float64(1), np.array([1, 2]), np.array([1.2, 2.3])])
+    300.2,
+    np.float64(300.2), 
+    np.array([300, 302]), 
+    np.array([300.2, 302.3])])
 def NAL_sample(request):
     return request.param
