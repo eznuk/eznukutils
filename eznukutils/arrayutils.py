@@ -13,7 +13,7 @@ def convert_to_array(x):
 
 def find_nearest(arr: npt.NDArray[np.number],
                  value: float) -> Tuple[int, float]:
-    """Find nearest entry in an array.
+    """Find nearest entry in an array. NaN values are ignored.
     
     Args:
         arr: A 1D array containing the data.
@@ -24,7 +24,7 @@ def find_nearest(arr: npt.NDArray[np.number],
     """
     
     arr = np.asarray(arr)
-    idx = (np.abs(arr - value)).argmin()
+    idx = np.nanargmin((np.abs(arr - value)))
     return np.where(arr==arr[idx])[0][0], arr[idx]
 
 def filter_peaks(dat_arr: npt.NDArray[np.number], peak_thr: float):
