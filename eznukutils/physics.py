@@ -42,7 +42,7 @@ def get_mu(gas: str, T: NAL) -> NAL:
     elif gas == "Ar":
         viscs = [15.9e-6, 22.7e-6, 28.6e-6]   # [Pa*s]
     else:
-        raise ValueError("no valid gas given")
+        raise ValueError(f"no valid gas given: {gas}")
 
     visc = np.interp(T, temps, viscs)
     return visc
@@ -77,7 +77,7 @@ def get_M(gas):
         elif gas == "Ar":
             M = 39.948e-3          # [kg/mol]
         else:
-            raise ValueError("no valid gas given")
+            raise ValueError(f"no valid gas given: {gas}")
     else:
         # iterable
         M = np.array([get_M(entry) for entry in gas])
@@ -94,7 +94,7 @@ def get_mscc(gas: str) -> float:
     elif gas == "N2":
         return 1.251e-6    # [kg]
     else:
-        raise ValueError("no valid gas given")
+        raise ValueError(f"no valid gas given: {gas}")
 
 def kgstosccm(kgs: TNAL, gas: str) -> TNAL:
     """Converts kg/s to sccm for either He, CO2 or N2.
